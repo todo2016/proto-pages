@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国下钻地图</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/china.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/beijing.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/tianjin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/hebei.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/shanxi.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/neimenggu.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/liaoning.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/jilin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/heilongjiang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/shanghai.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/jiangsu.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/zhejiang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/anhui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/fujian.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/jiangxi.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/shandong.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/henan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/hubei.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/hunan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/guangdong.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/guangxi.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/hainan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/chongqing.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/sichuan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/guizhou.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/yunnan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/xizang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/shanxi1.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/gansu.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/qinghai.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/ningxia.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/province/xinjiang.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0e27; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden; }
+    #chart { width: 100vw; height: 100vh; }
+    .info-bar {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 16px; z-index: 10;
+    }
+    .crumb {
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+      padding: 8px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer; transition: all 0.3s; font-size: 14px;
+    }
+    .crumb:hover { background: rgba(100,179,244,0.3); border-color: rgba(100,179,244,0.5); }
+    .crumb.active { background: rgba(100,179,244,0.4); border-color: #64b3f4; color: #64b3f4; }
+  </style>
+</head>
+<body>
+  <div class="info-bar">
+    <div class="crumb active" onclick="goBack()" id="backBtn" style="opacity:0.3;pointer-events:none">← 返回</div>
+    <div class="crumb" id="l1">中国</div>
+    <div class="crumb" id="l2" style="opacity:0.3">省/市</div>
+    <div class="crumb" id="l3" style="opacity:0.3">城市</div>
+  </div>
+  <div id="chart"></div>
+  <script>
+    const chart = echarts.init(document.getElementById('chart'), null, { renderer: 'canvas'});
+    let level = 0, currentProv = '', currentCity = '';
+
+    const colors = {
+      china: ['#1a4a6e','#2d6a8f','#3d8abf','#64b3f4','#a8d4ff'],
+      prov: ['#1a5a3a','#228b5c','#2eb87a','#4ade9a','#8affc4'],
+    };
+
+    function getOpt(name, data, level) {
+      const c = level === 0 ? colors.china : colors.prov;
+      return {
+        backgroundColor: '#0a0e27',
+        geo: {
+          map: name, roam: true, scaleLimit: { min: 0.8, max: 8 },
+          zoom: level === 0 ? 1.2 : 1.0,
+          center: level === 0 ? undefined : undefined,
+          itemStyle: {
+            areaColor: c[0], borderColor: 'rgba(100,179,244,0.3)', borderWidth: 1,
+            shadowColor: 'rgba(0,0,0,0.5)', shadowBlur: 10,
+          },
+          emphasis: {
+            itemStyle: { areaColor: c[3], borderColor: '#64b3f4', borderWidth: 2 },
+            label: { show: true, color: '#fff', fontSize: level===0 ? 11 : 10 }
+          },
+          select: { disabled: true },
+          silent: false,
+        },
+        visualMap: {
+          type: 'piecewise', min: 0, max: 1000,
+          pieces: [
+            {gt: 800, color: c[4]}, {gt: 500, color: c[3]},
+            {gt: 200, color: c[2]}, {gt: 50, color: c[1]}, {value: 0, color: c[0]},
+          ],
+          textStyle: { color: '#8ff', fontSize: 12 },
+          calculable: true, bottom: 30, right: 20,
+        },
+        series: [{
+          type: 'map', map: name, geoIndex: 0,
+          data: data.map(d => ({ name: d.name, value: Math.round(Math.random()*900+50) })),
+          emphasis: { itemStyle: { areaColor: c[3] } },
+          animation: true, animationDuration: 1200, animationEasing: 'cubicOut',
+          animationDelay: (idx) => idx * 20,
+        }],
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(10,14,39,0.9)',
+          borderColor: '#64b3f4', textStyle: { color: '#fff' },
+          formatter: p => `<b>${p.name}</b><br/>数值: ${p.value || '-'}`,
+        },
+        title: {
+          text: level===0 ? '中国下钻地图' : (level===1 ? currentProv : currentCity),
+          subtext: '点击省份下钻 · 拖拽漫游',
+          left: 'center', top: 70,
+          textStyle: { color: '#fff', fontSize: 22 },
+          subtextStyle: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
+        },
+      };
+    }
+
+    function loadChina() {
+      level = 0; currentProv = '';
+      const data = [
+        {name:'广东',value:901},{name:'山东',value:876},{name:'河南',value:850},{name:'四川',value:820},
+        {name:'江苏',value:798},{name:'河北',value:720},{name:'湖南',value:685},{name:'安徽',value:652},
+        {name:'湖北',value:620},{name:'浙江',value:595},{name:'广西',value:568},{name:'云南',value:530},
+        {name:'江西',value:498},{name:'辽宁',value:475},{name:'黑龙江',value:452},{name:'陕西',value:428},
+        {name:'山西',value:405},{name:'福建',value:385},{name:'贵州',value:362},{name:'重庆',value:340},
+        {name:'吉林',value:318},{name:'甘肃',value:295},{name:'内蒙古',value:272},{name:'新疆',value:250},
+        {name:'上海',value:680},{name:'北京',value:650},{name:'天津',value:320},{name:'海南',value:180},
+        {name:'青海',value:120},{name:'西藏',value:98},{name:'宁夏',value:88},{name:'台湾',value:450},
+        {name:'香港',value:280},{name:'澳门',value:150},
+      ];
+      chart.setOption(getOpt('china', data, 0));
+      updateCrumbs();
+    }
+
+    function goBack() {
+      if (level > 0) {
+        if (level === 2) { level = 1; loadProv(currentProv); }
+        else loadChina();
+      }
+    }
+
+    function updateCrumbs() {
+      document.getElementById('l1').textContent = level >= 0 ? '中国' : '中国';
+      document.getElementById('l2').textContent = level >= 1 ? (currentProv || '省/市') : '省/市';
+      document.getElementById('l2').style.opacity = level >= 1 ? '1' : '0.3';
+      document.getElementById('l3').textContent = level === 2 ? (currentCity || '城市') : '城市';
+      document.getElementById('l3').style.opacity = level === 2 ? '1' : '0.3';
+      document.getElementById('backBtn').style.opacity = level > 0 ? '1' : '0.3';
+      document.getElementById('backBtn').style.pointerEvents = level > 0 ? 'auto' : 'none';
+    }
+
+    function loadProv(prov) {
+      level = 1; currentProv = prov;
+      const mapName = provMap[prov] || prov;
+      try {
+        const data = genCityData(prov);
+        chart.setOption(getOpt(mapName, data, 1));
+      } catch(e) {
+        // fallback: 全国
+        loadChina();
+        return;
+      }
+      updateCrumbs();
+    }
+
+    const provMap = {
+      '广东':'guangdong','山东':'shandong','河南':'henan','四川':'sichuan',
+      '江苏':'jiangsu','河北':'hebei','湖南':'hunan','安徽':'anhui',
+      '湖北':'hubei','浙江':'zhejiang','广西':'guangxi','云南':'yunnan',
+      '江西':'jiangxi','辽宁':'liaoning','黑龙江':'heilongjiang','陕西':'shanxi1',
+      '山西':'shanxi','福建':'fujian','贵州':'guizhou','重庆':'chongqing',
+      '吉林':'jilin','甘肃':'gansu','内蒙古':'neimenggu','新疆':'xinjiang',
+      '上海':'shanghai','北京':'beijing','天津':'tianjin','海南':'hainan',
+      '青海':'qinghai','西藏':'xizang','宁夏':'ningxia',
+    };
+
+    // 城市数据生成（随机模拟真实分布）
+    function genCityData(prov) {
+      const cities = {
+        '广东':['广州','深圳','东莞','佛山','珠海','中山','惠州','江门','湛江','汕头'],
+        '山东':['济南','青岛','烟台','潍坊','临沂','济宁','威海','淄博','德州','聊城'],
+        '河南':['郑州','洛阳','开封','南阳','新乡','安阳','焦作','商丘','信阳','周口'],
+        '四川':['成都','绵阳','德阳','南充','宜宾','自贡','攀枝花','泸州','广元','遂宁'],
+        '江苏':['南京','苏州','无锡','常州','南通','徐州','扬州','盐城','淮安','连云港'],
+        '河北':['石家庄','保定','唐山','廊坊','邯郸','秦皇岛','沧州','邢台','衡水','张家口'],
+        '湖南':['长沙','株洲','湘潭','衡阳','邵阳','岳阳','常德','张家界','益阳','郴州'],
+        '安徽':['合肥','芜湖','蚌埠','淮南','马鞍山','淮北','铜陵','安庆','黄山','阜阳'],
+        '湖北':['武汉','宜昌','襄阳','荆州','黄石','十堰','孝感','荆门','鄂州','黄冈'],
+        '浙江':['杭州','宁波','温州','嘉兴','湖州','绍兴','金华','衢州','舟山','台州'],
+        '广西':['南宁','柳州','桂林','梧州','北海','防城港','钦州','贵港','玉林','百色'],
+        '云南':['昆明','曲靖','玉溪','保山','昭通','丽江','普洱','临沧','楚雄','红河'],
+        '江西':['南昌','景德镇','萍乡','九江','新余','鹰潭','赣州','吉安','宜春','抚州'],
+        '辽宁':['沈阳','大连','鞍山','抚顺','本溪','丹东','锦州','营口','阜新','辽阳'],
+        '黑龙江':['哈尔滨','齐齐哈尔','牡丹江','佳木斯','大庆','鸡西','双鸭山','伊春','七台河','鹤岗'],
+        '陕西':['西安','宝鸡','咸阳','渭南','铜川','延安','榆林','汉中','安康','商洛'],
+        '山西':['太原','大同','阳泉','长治','晋城','朔州','晋中','运城','忻州','临汾'],
+        '福建':['福州','厦门','泉州','漳州','莆田','宁德','三明','南平','龙岩'],
+        '贵州':['贵阳','遵义','六盘水','安顺','毕节','铜仁','黔西南','黔东南','黔南'],
+        '重庆':['重庆','万州','涪陵','渝中','大渡口','江北','沙坪坝','九龙坡','南岸','北碚'],
+        '吉林':['长春','吉林','四平','辽源','通化','白山','松原','白城','延边'],
+        '甘肃':['兰州','嘉峪关','金昌','白银','天水','武威','张掖','平凉','酒泉','庆阳'],
+        '内蒙古':['呼和浩特','包头','乌海','赤峰','通辽','鄂尔多斯','呼伦贝尔','巴彦淖尔','乌兰察布'],
+        '新疆':['乌鲁木齐','克拉玛依','吐鲁番','哈密','昌吉','博尔塔拉','巴音郭楞','阿克苏','克孜勒苏','喀什'],
+        '上海':['黄浦','徐汇','长宁','静安','普陀','虹口','杨浦','闵行','宝山','嘉定'],
+        '北京':['东城','西城','朝阳','丰台','石景山','海淀','门头沟','房山','通州','顺义'],
+        '天津':['和平','河东','河西','南开','河北','红桥','滨海','宝坻','武清','蓟州'],
+        '海南':['海口','三亚','三沙','儋州','五指山','琼海','文昌','万宁','东方'],
+        '青海':['西宁','海东','海北','黄南','海南','果洛','玉树','海西'],
+        '西藏':['拉萨','日喀则','昌都','林芝','山南','那曲','阿里'],
+        '宁夏':['银川','石嘴山','吴忠','固原','中卫'],
+      };
+      const list = cities[prov] || ['市辖区'];
+      return list.map(n => ({ name: n, value: Math.round(Math.random()*500+20) }));
+    }
+
+    chart.on('click', p => {
+      if (!p.name) return;
+      if (level === 0) {
+        // 下钻到省
+        currentProv = p.name;
+        if (provMap[p.name]) loadProv(p.name);
+      }
+    });
+
+    // 响应式
+    window.addEventListener('resize', () => chart.resize());
+
+    loadChina();
+  </script>
+</body>
+</html>
